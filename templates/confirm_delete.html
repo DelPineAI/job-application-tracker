@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ kind }}{% endblock %}
+{% block content %}
+<div class="card confirm">
+  <h1>Delete this {{ kind }}?</h1>
+  <p class="confirm-name">{{ name }}</p>
+  {% if cascade %}
+    <div class="flash flash-warning">
+      This will also permanently delete <strong>{{ cascade|join(', ') }}</strong> linked to it.
+    </div>
+  {% endif %}
+  <p class="muted">This can't be undone.</p>
+  <form method="post" action="{{ action }}" class="actions">
+    <a class="btn" href="{{ cancel }}">Cancel</a>
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+  </form>
+</div>
+{% endblock %}

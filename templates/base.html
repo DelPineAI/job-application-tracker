@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Job Tracker{% endblock %} · Job Application Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% set nav = [
+  ('dashboard', 'Dashboard', 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z'),
+  ('companies', 'Companies', 'M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M16 9h2a2 2 0 0 1 2 2v10M2 21h20M8 7h4M8 11h4M8 15h4'),
+  ('jobs', 'Jobs', 'M3 7h18v13H3zM8 7V4h8v3M3 12h18'),
+  ('applications', 'Applications', 'M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6zM14 3v6h6M8 13h8M8 17h5'),
+  ('contacts', 'Contacts', 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8'),
+  ('job_match', 'Job Match', 'M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z'),
+] %}
+{% set ep = request.endpoint or '' %}
+{% set current = 'job_match' if ep == 'job_match'
+   else 'companies' if ep.startswith('compan')
+   else 'jobs' if ep.startswith('job')
+   else 'applications' if ep.startswith('application')
+   else 'contacts' if ep.startswith('contact')
+   else ep %}
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('dashboard') }}">
+    <span class="brand-mark">JT</span>
+    <span>Job Tracker</span>
+  </a>
+  <nav>
+    {% for endpoint, label, icon in nav %}
+      <a href="{{ url_for(endpoint) }}" class="{{ 'active' if current == endpoint }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="{{ icon }}"/></svg>{{ label }}
+      </a>
+    {% endfor %}
+  </nav>
+  <p class="sidebar-foot">Flask · MySQL</p>
+</aside>
+
+<main class="content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{# Reusable form fields and UI pieces so every page looks consistent #}
+
+{% macro val(form, name) -%}
+  {%- set v = form.get(name) if form else none -%}
+  {{- v if v is not none else '' -}}
+{%- endmacro %}
+
+{% macro field(form, errors, name, label, type='text', required=false, placeholder='', help='', maxlength=none, extra='') %}
+<div class="field {{ 'has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="req">*</span>{% endif %}</label>
+  <input type="{{ type }}" id="{{ name }}" name="{{ name }}" value="{{ val(form, name) }}"
+         {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+         {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+         {% if required %}required{% endif %} {{ extra|safe }}>
+  {% if errors.get(name) %}<p class="error-text">{{ errors[name] }}</p>
+  {% elif help %}<p class="help-text">{{ help }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro textarea(form, errors, name, label, rows=3, placeholder='', help='') %}
+<div class="field {{ 'has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}</label>
+  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}" placeholder="{{ placeholder }}">{{ val(form, name) }}</textarea>
+  {% if errors.get(name) %}<p class="error-text">{{ errors[name] }}</p>
+  {% elif help %}<p class="help-text">{{ help }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro select(form, errors, name, label, options, required=false, placeholder=none) %}
+{# options: list of (value, text) pairs #}
+<div class="field {{ 'has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="req">*</span>{% endif %}</label>
+  <select id="{{ name }}" name="{{ name }}" {% if required %}required{% endif %}>
+    {% if placeholder %}<option value="">{{ placeholder }}</option>{% endif %}
+    {% for value, text in options %}
+      <option value="{{ value }}" {{ 'selected' if val(form, name)|string == value|string }}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {% if errors.get(name) %}<p class="error-text">{{ errors[name] }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro status_badge(status) -%}
+<span class="badge status-{{ status|lower }}">{{ status }}</span>
+{%- endmacro %}
+
+{% macro chips(skills, kind='') -%}
+{% if skills %}<span class="chips">{% for s in skills %}<span class="chip {{ kind }}">{{ s }}</span>{% endfor %}</span>
+{% else %}<span class="muted">—</span>{% endif %}
+{%- endmacro %}
+
+{% macro empty(message, link=none, label=none) %}
+<div class="empty">
+  <p>{{ message }}</p>
+  {% if link %}<a class="btn btn-primary" href="{{ link }}">{{ label }}</a>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro page_header(title, subtitle='', action_url=none, action_label=none) %}
+<div class="page-header">
+  <div>
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<p class="subtitle">{{ subtitle }}</p>{% endif %}
+  </div>
+  {% if action_url %}<a class="btn btn-primary" href="{{ action_url }}">+ {{ action_label }}</a>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro detail_actions(edit_url, delete_url) %}
+<div class="actions">
+  <a class="btn" href="{{ edit_url }}">Edit</a>
+  <a class="btn btn-danger-outline" href="{{ delete_url }}">Delete</a>
+</div>
+{% endmacro %}
