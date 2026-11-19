@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Jobs{% endblock %}
+{% block content %}
+{{ m.page_header('Jobs', jobs|length ~ ' job' ~ ('' if jobs|length == 1 else 's') ~ ' tracked', url_for('job_new'), 'Add job') }}
+
+<form class="toolbar" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search title or company…">
+  <select name="type" onchange="this.form.submit()">
+    <option value="">All types</option>
+    {% for t in JOB_TYPES %}<option {{ 'selected' if t == job_type }}>{{ t }}</option>{% endfor %}
+  </select>
+  <select name="company_id" onchange="this.form.submit()">
+    <option value="">All companies</option>
+    {% for c in companies %}<option value="{{ c.company_id }}" {{ 'selected' if c.company_id == company_id }}>{{ c.company_name }}</option>{% endfor %}
+  </select>
+  <button class="btn" type="submit">Search</button>
+  {% if q or job_type or company_id %}<a class="btn btn-link" href="{{ url_for('jobs') }}">Clear</a>{% endif %}
+</form>
+
+{% if jobs %}
+<div class="card table-card">
+<table class="table">
+  <thead><tr><th>Job</th><th>Type</th><th>Salary</th><th>Requirements</th><th>Posted</th><th></th></tr></thead>
+  <tbody>
+  {% for j in jobs %}
+    <tr>
+      <td><a href="{{ url_for('job_detail', job_id=j.job_id) }}"><strong>{{ j.job_title }}</strong></a>
+        <div class="muted">{{ j.company_name }}{% if j.application_count %} · <span class="applied-tag">Applied</span>{% endif %}</div></td>
+      <td><span class="type-tag">{{ j.job_type }}</span></td>
+      <td class="nowrap">{{ j|salary }}</td>
+      <td>{{ m.chips(j.requirements) }}</td>
+      <td class="nowrap muted">{{ j.date_posted|nicedate or '—' }}</td>
+      <td class="row-actions">
+        <a href="{{ url_for('job_edit', job_id=j.job_id) }}">Edit</a>
+        <a class="danger" href="{{ url_for('job_delete', job_id=j.job_id) }}">Delete</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% elif q or job_type or company_id %}
+  {{ m.empty('No jobs match your filters.') }}
+{% else %}
+  {{ m.empty('No jobs yet. Add a job posting you are interested in.', url_for('job_new'), 'Add job') }}
+{% endif %}
+{% endblock %}

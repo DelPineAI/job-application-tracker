@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ job.job_title }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> /</p>
+<div class="page-header">
+  <div>
+    <h1>{{ job.job_title }}</h1>
+    <p class="subtitle"><a href="{{ url_for('company_detail', company_id=job.company_id) }}">{{ job.company_name }}</a> · {{ job.job_type }}</p>
+  </div>
+  {{ m.detail_actions(url_for('job_edit', job_id=job.job_id), url_for('job_delete', job_id=job.job_id)) }}
+</div>
+
+<div class="card">
+  <dl class="details">
+    <dt>Salary</dt><dd>{{ job|salary }}</dd>
+    <dt>Date posted</dt><dd>{{ job.date_posted|nicedate or '—' }}</dd>
+    <dt>Posting</dt><dd>{% if job.job_url %}<a href="{{ job.job_url }}" target="_blank" rel="noopener">{{ job.job_url }}</a>{% else %}—{% endif %}</dd>
+    <dt>Requirements</dt><dd>{{ m.chips(job.requirements) }}</dd>
+  </dl>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Your applications ({{ applications|length }})</h2><a class="btn btn-sm btn-primary" href="{{ url_for('application_new', job_id=job.job_id) }}">+ Log application</a></div>
+  {% if applications %}
+    <table class="table compact">
+      <thead><tr><th>Applied</th><th>Status</th><th>Resume</th><th>Cover letter</th></tr></thead>
+      <tbody>
+      {% for a in applications %}
+        <tr>
+          <td><a href="{{ url_for('application_detail', application_id=a.application_id) }}">{{ a.application_date|nicedate }}</a></td>
+          <td>{{ m.status_badge(a.status) }}</td>
+          <td>{{ a.resume_version or '—' }}</td>
+          <td>{{ 'Yes' if a.cover_letter_sent else 'No' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}<p class="muted">You haven't applied to this job yet.</p>{% endif %}
+</section>
+{% endblock %}

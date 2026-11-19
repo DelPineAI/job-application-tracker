@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% set title = 'Add job' if mode == 'new' else 'Edit ' ~ record.job_title %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> /{% if record %} <a href="{{ url_for('job_detail', job_id=record.job_id) }}">{{ record.job_title }}</a> /{% endif %}</p>
+{{ m.page_header(title) }}
+{% if not companies %}
+  {{ m.empty('You need at least one company before adding a job.', url_for('company_new'), 'Add a company first') }}
+{% else %}
+<form method="post" class="card form" novalidate>
+  <div class="form-grid">
+    {{ m.field(form, errors, 'job_title', 'Job title', required=true, maxlength=100, placeholder='e.g. Software Developer') }}
+    {{ m.select(form, errors, 'company_id', 'Company', companies|options('company_id', 'company_name'), required=true, placeholder='Choose a company…') }}
+    {{ m.select(form, errors, 'job_type', 'Job type', JOB_TYPES|options) }}
+    {{ m.field(form, errors, 'date_posted', 'Date posted', type='date', extra='max="' ~ today ~ '"') }}
+    <div class="form-row-2">
+      {{ m.field(form, errors, 'salary_min', 'Salary min ($/yr)', type='number', placeholder='60000', extra='min="0" step="1000"') }}
+      {{ m.field(form, errors, 'salary_max', 'Salary max ($/yr)', type='number', placeholder='80000', extra='min="0" step="1000"') }}
+    </div>
+    {{ m.field(form, errors, 'job_url', 'Job posting URL', type='url', placeholder='https://…', maxlength=300) }}
+  </div>
+  <div class="field {{ 'has-error' if errors.get('requirements') }}">
+    <label for="requirements">Required skills</label>
+    <input type="text" id="requirements" name="requirements" value="{{ m.val(form, 'requirements') }}" placeholder="Python, SQL, Flask" data-chip-preview="req-preview">
+    {% if errors.get('requirements') %}<p class="error-text">{{ errors.requirements }}</p>
+    {% else %}<p class="help-text">Separate skills with commas. Stored as a JSON array and used by Job Match.</p>{% endif %}
+    <div class="chips" id="req-preview"></div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{{ url_for('job_detail', job_id=record.job_id) if record else url_for('jobs') }}">Cancel</a>
+    <button class="btn btn-primary" type="submit">{{ 'Add job' if mode == 'new' else 'Save changes' }}</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
