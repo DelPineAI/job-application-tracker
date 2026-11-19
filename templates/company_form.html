@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% set title = 'Add company' if mode == 'new' else 'Edit ' ~ record.company_name %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('companies') }}">Companies</a> /{% if record %} <a href="{{ url_for('company_detail', company_id=record.company_id) }}">{{ record.company_name }}</a> /{% endif %}</p>
+{{ m.page_header(title) }}
+<form method="post" class="card form" novalidate>
+  <div class="form-grid">
+    {{ m.field(form, errors, 'company_name', 'Company name', required=true, maxlength=100) }}
+    {{ m.field(form, errors, 'industry', 'Industry', placeholder='e.g. Software', maxlength=50) }}
+    {{ m.field(form, errors, 'website', 'Website', type='url', placeholder='https://example.com', maxlength=200) }}
+    <div class="form-row-2">
+      {{ m.field(form, errors, 'city', 'City', maxlength=50) }}
+      {{ m.field(form, errors, 'state', 'State', placeholder='FL', maxlength=50) }}
+    </div>
+  </div>
+  {{ m.textarea(form, errors, 'notes', 'Notes', rows=4, placeholder='Culture, benefits, why you are interested…') }}
+  <div class="actions">
+    <a class="btn" href="{{ url_for('company_detail', company_id=record.company_id) if record else url_for('companies') }}">Cancel</a>
+    <button class="btn btn-primary" type="submit">{{ 'Add company' if mode == 'new' else 'Save changes' }}</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Companies{% endblock %}
+{% block content %}
+{{ m.page_header('Companies', companies|length ~ ' compan' ~ ('y' if companies|length == 1 else 'ies'), url_for('company_new'), 'Add company') }}
+
+<form class="toolbar" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search name, industry or city…">
+  <button class="btn" type="submit">Search</button>
+  {% if q %}<a class="btn btn-link" href="{{ url_for('companies') }}">Clear</a>{% endif %}
+</form>
+
+{% if companies %}
+<div class="card table-card">
+<table class="table">
+  <thead><tr><th>Company</th><th>Industry</th><th>Location</th><th class="center">Jobs</th><th class="center">Contacts</th><th></th></tr></thead>
+  <tbody>
+  {% for c in companies %}
+    <tr>
+      <td><a href="{{ url_for('company_detail', company_id=c.company_id) }}"><strong>{{ c.company_name }}</strong></a>
+        {% if c.website %}<div class="muted small">{{ c.website|replace('https://','')|replace('http://','') }}</div>{% endif %}</td>
+      <td>{{ c.industry or '—' }}</td>
+      <td>{{ [c.city, c.state]|select|join(', ') or '—' }}</td>
+      <td class="center">{{ c.job_count }}</td>
+      <td class="center">{{ c.contact_count }}</td>
+      <td class="row-actions">
+        <a href="{{ url_for('company_edit', company_id=c.company_id) }}">Edit</a>
+        <a class="danger" href="{{ url_for('company_delete', company_id=c.company_id) }}">Delete</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% elif q %}
+  {{ m.empty('No companies match “' ~ q ~ '”.') }}
+{% else %}
+  {{ m.empty('No companies yet. Start by adding a company you want to work for.', url_for('company_new'), 'Add company') }}
+{% endif %}
+{% endblock %}

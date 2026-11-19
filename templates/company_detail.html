@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ company.company_name }}{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('companies') }}">Companies</a> /</p>
+<div class="page-header">
+  <div>
+    <h1>{{ company.company_name }}</h1>
+    <p class="subtitle">{{ [company.industry, [company.city, company.state]|select|join(', ')]|select|join(' · ') }}</p>
+  </div>
+  {{ m.detail_actions(url_for('company_edit', company_id=company.company_id), url_for('company_delete', company_id=company.company_id)) }}
+</div>
+
+<div class="card">
+  <dl class="details">
+    <dt>Website</dt><dd>{% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website }}</a>{% else %}—{% endif %}</dd>
+    <dt>Industry</dt><dd>{{ company.industry or '—' }}</dd>
+    <dt>Location</dt><dd>{{ [company.city, company.state]|select|join(', ') or '—' }}</dd>
+    <dt>Notes</dt><dd class="pre">{{ company.notes or '—' }}</dd>
+  </dl>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2>Jobs ({{ jobs|length }})</h2><a class="btn btn-sm" href="{{ url_for('job_new', company_id=company.company_id) }}">+ Add job</a></div>
+  {% if jobs %}
+  <table class="table compact">
+    <thead><tr><th>Title</th><th>Type</th><th>Salary</th><th>Requirements</th></tr></thead>
+    <tbody>
+    {% for j in jobs %}
+      <tr>
+        <td><a href="{{ url_for('job_detail', job_id=j.job_id) }}"><strong>{{ j.job_title }}</strong></a></td>
+        <td>{{ j.job_type }}</td>
+        <td class="nowrap">{{ j|salary }}</td>
+        <td>{{ m.chips(j.requirements) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No jobs for this company yet.</p>{% endif %}
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2>Contacts ({{ contacts|length }})</h2><a class="btn btn-sm" href="{{ url_for('contact_new', company_id=company.company_id) }}">+ Add contact</a></div>
+    {% if contacts %}
+      <ul class="list plain">
+      {% for ct in contacts %}
+        <li><a href="{{ url_for('contact_detail', contact_id=ct.contact_id) }}"><strong>{{ ct.contact_name }}</strong></a>
+          <div class="muted">{{ ct.title or '' }}{% if ct.email %} · {{ ct.email }}{% endif %}</div></li>
+      {% endfor %}
+      </ul>
+    {% else %}<p class="muted">No contacts yet.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Applications ({{ applications|length }})</h2>
+    {% if applications %}
+      <ul class="list plain">
+      {% for a in applications %}
+        <li class="split"><span><a href="{{ url_for('application_detail', application_id=a.application_id) }}"><strong>{{ a.job_title }}</strong></a>
+          <div class="muted">Applied {{ a.application_date|nicedate }}</div></span>{{ m.status_badge(a.status) }}</li>
+      {% endfor %}
+      </ul>
+    {% else %}<p class="muted">You haven't applied here yet.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}
