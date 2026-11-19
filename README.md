@@ -4,7 +4,7 @@ A full-stack web app for tracking a job search: companies, job postings, applica
 
 **Stack:** MySQL · Python 3 / Flask · HTML / CSS (no frameworks, no CDN — works offline)
 
-🎥 **Demo video:** [`demo_video.mp4`](demo_video.mp4)
+🎥 **Demo video:** `demo_video.mp4` (or `demo_video.mov`) in the root of this repository — a 3–7 minute walkthrough of the client, server and database.
 
 ---
 
@@ -149,7 +149,7 @@ job_tracker/
 ├── AI_USAGE.md         # GenAI documentation
 ├── requirements.txt
 ├── .env.example
-└── demo_video.mp4
+└── demo_video.mp4 / .mov
 ```
 
 ## How a request flows
