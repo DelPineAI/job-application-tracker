@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Job Match{% endblock %}
+{% block content %}
+{{ m.page_header('Job Match', 'Enter your skills to see which jobs fit you best') }}
+
+<form class="card form match-form" method="get" action="{{ url_for('job_match') }}">
+  <div class="field">
+    <label for="skills">Your skills</label>
+    <div class="match-input">
+      <input type="text" id="skills" name="skills" value="{{ skills_text }}" placeholder="Python, SQL, Flask" autofocus>
+      <select name="min" aria-label="Minimum match">
+        <option value="1" {{ 'selected' if min_percent == 1 }}>Any match</option>
+        <option value="50" {{ 'selected' if min_percent == 50 }}>50%+</option>
+        <option value="75" {{ 'selected' if min_percent == 75 }}>75%+</option>
+        <option value="100" {{ 'selected' if min_percent == 100 }}>100% only</option>
+        <option value="0" {{ 'selected' if min_percent == 0 }}>Show all jobs</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Find matches</button>
+    </div>
+    <p class="help-text">Separate skills with commas. Matching ignores upper/lower case.</p>
+  </div>
+  {% if all_skills %}
+  <div class="suggestions">
+    <span class="muted small">Skills found in your jobs (click to add):</span>
+    {% for s in all_skills %}
+      <button type="button" class="chip chip-btn {{ 'on' if s|lower in user_skills|map('lower')|list }}" data-skill="{{ s }}">{{ s }}</button>
+    {% endfor %}
+  </div>
+  {% endif %}
+</form>
+
+{% if user_skills %}
+  <h2 class="section-title">
+    {{ results|length }} matching job{{ '' if results|length == 1 else 's' }}
+    <span class="muted small">for {{ user_skills|join(', ') }} · {{ scored_jobs }} jobs with requirements checked</span>
+  </h2>
+  {% if results %}
+    <ol class="match-list">
+    {% for r in results %}
+      {% set level = 'high' if r.percent >= 75 else 'mid' if r.percent >= 50 else 'low' %}
+      <li class="card match-card">
+        <div class="match-rank">{{ loop.index }}</div>
+        <div class="match-body">
+          <div class="match-title">
+            <a href="{{ url_for('job_detail', job_id=r.job_id) }}"><strong>{{ r.job_title }}</strong></a> at
+            <a href="{{ url_for('company_detail', company_id=r.company_id) }}">{{ r.company_name }}</a>
+            {% if r.application_count %}<span class="applied-tag">Applied</span>{% endif %}
+          </div>
+          <div class="muted small">{{ r.job_type }} · {{ r|salary }}</div>
+          <div class="match-skills">
+            {% if r.matched %}<div><span class="label">Have:</span> {{ m.chips(r.matched, 'chip-match') }}</div>{% endif %}
+            {% if r.missing %}<div><span class="label">Missing:</span> {{ m.chips(r.missing, 'chip-missing') }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="match-score {{ level }}">
+          <div class="ring" style="--p: {{ r.percent }}"><span>{{ r.percent }}%</span></div>
+          <div class="muted small">{{ r.matched|length }}/{{ r.total }} skills</div>
+          {% if not r.application_count %}<a class="btn btn-sm" href="{{ url_for('application_new', job_id=r.job_id) }}">Log application</a>{% endif %}
+        </div>
+      </li>
+    {% endfor %}
+    </ol>
+  {% else %}
+    {{ m.empty('No jobs match those skills at this threshold. Try adding more skills or lowering the minimum match.') }}
+  {% endif %}
+{% else %}
+  <div class="card hint">
+    <h2>How matching works</h2>
+    <p>For each job, the app compares your skills with the job's <code>requirements</code> JSON list:</p>
+    <p class="formula">match % = skills you have ÷ skills the job requires × 100</p>
+    <p class="muted">Example: you know Python, SQL, Flask and a job needs Python, SQL, Tableau → 2 of 3 = <strong>67%</strong>, missing Tableau. Jobs are ranked from best to worst match.</p>
+  </div>
+{% endif %}
+{% endblock %}
