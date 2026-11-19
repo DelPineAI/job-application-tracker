@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}{{ app_row.job_title }} application{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('applications') }}">Applications</a> /</p>
+<div class="page-header">
+  <div>
+    <h1>{{ app_row.job_title }} {{ m.status_badge(app_row.status) }}</h1>
+    <p class="subtitle"><a href="{{ url_for('company_detail', company_id=app_row.company_id) }}">{{ app_row.company_name }}</a> · <a href="{{ url_for('job_detail', job_id=app_row.job_id) }}">View job</a></p>
+  </div>
+  {{ m.detail_actions(url_for('application_edit', application_id=app_row.application_id), url_for('application_delete', application_id=app_row.application_id)) }}
+</div>
+
+<div class="card">
+  <dl class="details">
+    <dt>Applied on</dt><dd>{{ app_row.application_date|nicedate }}</dd>
+    <dt>Status</dt><dd>{{ m.status_badge(app_row.status) }}</dd>
+    <dt>Resume version</dt><dd>{{ app_row.resume_version or '—' }}</dd>
+    <dt>Cover letter</dt><dd>{{ 'Sent' if app_row.cover_letter_sent else 'Not sent' }}</dd>
+  </dl>
+</div>
+
+<section class="card">
+  <h2>Interview rounds ({{ app_row.interview_data|length }})</h2>
+  {% if app_row.interview_data %}
+    <ol class="timeline">
+      {% for r in app_row.interview_data %}
+        <li class="{{ 'upcoming' if r.date >= today }}">
+          <div class="timeline-date">{{ r.date|nicedate }}{% if r.date >= today %} <span class="pill">Upcoming</span>{% endif %}</div>
+          <div><strong>{{ r.type }}</strong>{% if r.interviewer %} with {{ r.interviewer }}{% endif %}</div>
+          {% if r.notes %}<div class="muted">{{ r.notes }}</div>{% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">No interviews logged yet. <a href="{{ url_for('application_edit', application_id=app_row.application_id) }}">Add one</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}

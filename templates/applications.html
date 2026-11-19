@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+{{ m.page_header('Applications', applications|length ~ ' application' ~ ('' if applications|length == 1 else 's') ~ (' · ' ~ status if status else ''), url_for('application_new'), 'Log application') }}
+
+<div class="status-tabs">
+  <a href="{{ url_for('applications', q=q or none) }}" class="{{ 'active' if not status }}">All</a>
+  {% for s in STATUSES %}
+    <a href="{{ url_for('applications', status=s, q=q or none) }}" class="{{ 'active' if s == status }}">{{ s }}</a>
+  {% endfor %}
+</div>
+
+<form class="toolbar" method="get">
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <input type="search" name="q" value="{{ q }}" placeholder="Search job title or company…">
+  <button class="btn" type="submit">Search</button>
+  {% if q %}<a class="btn btn-link" href="{{ url_for('applications', status=status or none) }}">Clear</a>{% endif %}
+</form>
+
+{% if applications %}
+<div class="card table-card">
+<table class="table">
+  <thead><tr><th>Job</th><th>Applied</th><th>Status</th><th>Resume</th><th class="center">Cover letter</th><th class="center">Interviews</th><th></th></tr></thead>
+  <tbody>
+  {% for a in applications %}
+    <tr>
+      <td><a href="{{ url_for('application_detail', application_id=a.application_id) }}"><strong>{{ a.job_title }}</strong></a>
+        <div class="muted">{{ a.company_name }}</div></td>
+      <td class="nowrap">{{ a.application_date|nicedate }}</td>
+      <td>{{ m.status_badge(a.status) }}</td>
+      <td>{{ a.resume_version or '—' }}</td>
+      <td class="center">{{ '✓' if a.cover_letter_sent else '—' }}</td>
+      <td class="center">{{ a.interview_data|length or '—' }}</td>
+      <td class="row-actions">
+        <a href="{{ url_for('application_edit', application_id=a.application_id) }}">Edit</a>
+        <a class="danger" href="{{ url_for('application_delete', application_id=a.application_id) }}">Delete</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% elif status or q %}
+  {{ m.empty('No applications match your filters.') }}
+{% else %}
+  {{ m.empty('No applications yet.', url_for('application_new'), 'Log your first application') }}
+{% endif %}
+{% endblock %}
